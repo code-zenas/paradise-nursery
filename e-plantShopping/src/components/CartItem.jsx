@@ -1,44 +1,101 @@
-import React, { useState } from "react";
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  removeItem,
+  updateQuantity,
+} from "../redux/CartSlice";
 
 function CartItem() {
-  const [quantity, setQuantity] = useState(1);
+  const dispatch = useDispatch();
 
-  const price = 20;
-  const total = quantity * price;
+  const cartItems = useSelector(
+    (state) => state.cart.items
+  );
+
+  const handleIncrease = (item) => {
+    dispatch(
+      updateQuantity({
+        id: item.id,
+        quantity: item.quantity + 1,
+      })
+    );
+  };
+
+  const handleDecrease = (item) => {
+    if (item.quantity > 1) {
+      dispatch(
+        updateQuantity({
+          id: item.id,
+          quantity: item.quantity - 1,
+        })
+      );
+    }
+  };
+
+  const calculateTotalAmount = () => {
+    return cartItems.reduce(
+      (total, item) =>
+        total + item.price * item.quantity,
+      0
+    );
+  };
 
   return (
     <div>
       <h1>Shopping Cart</h1>
 
-      <img
-        src="https://via.placeholder.com/150"
-        alt="Plant"
-      />
+      {cartItems.map((item) => (
+        <div
+          key={item.id}
+          style={{
+            border: "1px solid gray",
+            marginBottom: "20px",
+            padding: "10px",
+          }}
+        >
+          <img
+            src={item.image}
+            alt={item.name}
+            width="150"
+          />
 
-      <h2>Snake Plant</h2>
+          <h2>{item.name}</h2>
 
-      <p>Unit Price: ${price}</p>
+          <p>Unit Price: ${item.price}</p>
 
-      <p>Total: ${total}</p>
+          <p>Quantity: {item.quantity}</p>
 
-      <button onClick={() => setQuantity(quantity + 1)}>
-        +
-      </button>
+          <p>
+            Total Cost: $
+            {item.price * item.quantity}
+          </p>
 
-      <span>{quantity}</span>
+          <button
+            onClick={() => handleIncrease(item)}
+          >
+            +
+          </button>
 
-      <button
-        onClick={() =>
-          quantity > 1 && setQuantity(quantity - 1)
-        }
-      >
-        -
-      </button>
+          <button
+            onClick={() => handleDecrease(item)}
+          >
+            -
+          </button>
 
-      <br />
-      <br />
+          <button
+            onClick={() =>
+              dispatch(removeItem(item.id))
+            }
+          >
+            Delete
+          </button>
+        </div>
+      ))}
 
-      <button>Delete</button>
+      <h2>
+        Total Cart Amount: $
+        {calculateTotalAmount()}
+      </h2>
 
       <button
         onClick={() => alert("Coming Soon")}
